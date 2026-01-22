@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Product List</title>
+    <link rel="shortcut icon" href="/images/logo.png" type="image/x-icon"/>
+    <link rel="stylesheet" href="/stylesheets/style.css"/>
+</head>
+
+<body>
+<div class="container">
+    <div class="topbar">
+        <h1>Products</h1>
+        <div>
+            <span class="badge">Hello, <%= user.username %></span>
+            <form action="/logout" method="post" style="display: inline">
+                <button class="btn" type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="margin: 0; font-size: 16px">
+            <% if (editingProduct) { %> Edit Product
+            <span class="badge" style="margin-left: 8px">
+            #<%= editingProduct.id %>
+          </span>
+            <% } else { %> Add Product
+            <% } %>
+        </h2>
+
+        <form
+                action="<%= editingProduct ? ('/edit/' + editingProduct.id) : '/add' %>"
+                method="post"
+                enctype="multipart/form-data"
+        >
+            <div class="form-grid">
+                <div>
+                    <label for="name">Name</label>
+                    <input
+                            id="name"
+                            name="name"
+                            required
+                            value="<%= editingProduct ? editingProduct.name : '' %>"
+                    />
+                </div>
+
+                <div>
+                    <label for="price">Price</label>
+                    <input
+                            id="price"
+                            type="number"
+                            min="0"
+                            name="price"
+                            required
+                            value="<%= editingProduct ? editingProduct.price : '' %>"
+                    />
+                </div>
+
+                <div>
+                    <label for="quantity">Quantity</label>
+                    <input
+                            id="quantity"
+                            type="number"
+                            min="0"
+                            name="quantity"
+                            required
+                            value="<%= editingProduct ? editingProduct.quantity : '' %>"
+                    />
+                </div>
+                <div>
+                    <label for="image">Image</label>
+                    <input id="image" name="image" type="file" accept="image/*"/>
+                    <% if (editingProduct && editingProduct.image_url) { %>
+                        <div id="imagePreviewContainer" style="margin-top:8px">
+                            <img id="imagePreview" src="<%= editingProduct.image_url %>" alt="Product Image"
+                                 style="max-height:80px;border:1px solid #ddd;border-radius:4px"/>
+                        </div>
+                    <% } else { %>
+                        <div id="imagePreviewContainer" style="margin-top:8px;display:none">
+                            <img id="imagePreview" src="" alt="Product Image"
+                                 style="max-height:80px;border:1px solid #ddd;border-radius:4px"/>
+                        </div>
+                    <% } %>
+                    <script>
+                        document.getElementById('image').addEventListener('change', function (e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function (event) {
+                                    document.getElementById('imagePreview').src = event.target.result;
+                                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn primary" type="submit">
+                    <% if (editingProduct) { %> Update
+                    <% } else { %> Add
+                    <% } %>
+                </button>
+
+                <% if (editingProduct) { %>
+                    <a class="btn link" href="/">Cancel</a>
+                <% } %>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-wrap" style="margin-top: 16px">
+        <table>
+            <thead>
+            <tr>
+                <th style="width: 80px">ID</th>
+                <th>Name</th>
+                <th style="width: 120px">Price</th>
+                <th style="width: 120px">Quantity</th>
+                <th style="width: 120px">Image</th>
+                <th style="width: 180px">Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <% products.forEach(p => { %>
+                <tr>
+                    <td><%= p.id %></td>
+                    <td><%= p.name %></td>
+                    <td><%= p.price %></td>
+                    <td><%= p.quantity %></td>
+                    <td>
+                        <% if (p.image_url) { %>
+                            <img src="<%= p.image_url %>" alt="Image"
+                                 style="height:40px;border:1px solid #ddd;border-radius:4px"/>
+                        <% } else { %>
+                            <span style="color:#888">No image</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <form
+                                    action="/delete/<%= p.id %>"
+                                    method="post"
+                                    style="display: inline"
+                            >
+                                <button class="btn danger" type="submit">Delete</button>
+                            </form>
+                            <a class="btn" href="/edit/<%= p.id %>">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
