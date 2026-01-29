@@ -1,5 +1,6 @@
 const productService = require("../services/product.service");
 const categoryService = require("../services/category.service");
+const productLogService = require("../services/productLog.service");
 
 exports.index = async (req, res) => {
   try {
@@ -34,6 +35,14 @@ exports.index = async (req, res) => {
 exports.add = async (req, res) => {
   try {
     const created = await productService.create(req.body);
+
+    // Log CREATE action
+    await productLogService.createLog({
+      productId: created.id,
+      action: "CREATE",
+      userId: req.session.user.id,
+    });
+
     if (req.file) {
       try {
         await productService.updateImage(created.id, {
@@ -83,6 +92,14 @@ exports.editPage = async (req, res) => {
 exports.edit = async (req, res) => {
   try {
     await productService.update(req.params.id, req.body);
+
+    // Log UPDATE action
+    await productLogService.createLog({
+      productId: req.params.id,
+      action: "UPDATE",
+      userId: req.session.user.id,
+    });
+
     if (req.file) {
       try {
         await productService.updateImage(req.params.id, {
@@ -103,6 +120,14 @@ exports.edit = async (req, res) => {
 exports.del = async (req, res) => {
   try {
     await productService.remove(req.params.id);
+
+    // Log DELETE action
+    await productLogService.createLog({
+      productId: req.params.id,
+      action: "DELETE",
+      userId: req.session.user.id,
+    });
+
     res.redirect("/");
   } catch (error) {
     console.error("Error deleting product:", error);

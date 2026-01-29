@@ -20,6 +20,9 @@
             <div class="nav-links">
                 <a href="/" class="btn">Products</a>
                 <a href="/categories" class="btn primary">Categories</a>
+                <% if (user.role === 'admin') { %>
+                    <a href="/logs" class="btn">Activity Logs</a>
+                <% } %>
                 <form action="/logout" method="post" style="display: inline;">
                     <button type="submit" class="btn danger">Logout</button>
                 </form>
