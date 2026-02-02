@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Product Activity Logs</title>
+    <link rel="shortcut icon" href="/images/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="user-info">
+                <h1>System Management</h1>
+                <span class="badge">
+                    👤 <%= user.username %> (<%= user.role %>)
+                </span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="btn">Products</a>
+                <a href="/categories" class="btn">Categories</a>
+                <a href="/logs" class="btn primary">Activity Logs</a>
+                <form action="/logout" method="post" style="display: inline;">
+                    <button type="submit" class="btn danger">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 20px;">
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #dbeafe;">📝</div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Logs</div>
+                    <div class="stat-value"><%= logs.length %></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #dcfce7;">➕</div>
+                <div class="stat-content">
+                    <div class="stat-label">Created</div>
+                    <div class="stat-value"><%= logs.filter(l => l.action === 'CREATE').length %></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fef3c7;">✏️</div>
+                <div class="stat-content">
+                    <div class="stat-label">Updated</div>
+                    <div class="stat-value"><%= logs.filter(l => l.action === 'UPDATE').length %></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fee2e2;">🗑️</div>
+                <div class="stat-content">
+                    <div class="stat-label">Deleted</div>
+                    <div class="stat-value"><%= logs.filter(l => l.action === 'DELETE').length %></div>
+                </div>
+            </div>
+        </div>
+
+        <% if (typeof filterProduct !== 'undefined' && filterProduct) { %>
+            <div class="card" style="margin-bottom: 20px; background: #eff6ff;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Filtered by Product:</strong> <%= filterProduct.name %>
+                    </div>
+                    <a href="/logs" class="btn">Clear Filter</a>
+                </div>
+            </div>
+        <% } %>
+
+        <h2 style="margin-top: 24px; margin-bottom: 16px;">📋 Product Activity History</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Product</th>
+                        <th>User</th>
+                        <th>Log ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (logs.length === 0) { %>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--muted);">
+                                No activity logs found
+                            </td>
+                        </tr>
+                    <% } else { %>
+                        <% logs.forEach(log => { %>
+                            <tr>
+                                <td>
+                                    <%= new Date(log.time).toLocaleString('en-US', { 
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit'
+                                    }) %>
+                                </td>
+                                <td>
+                                    <% if (log.action === 'CREATE') { %>
+                                        <span class="badge success">➕ CREATE</span>
+                                    <% } else if (log.action === 'UPDATE') { %>
+                                        <span class="badge warning">✏️ UPDATE</span>
+                                    <% } else if (log.action === 'DELETE') { %>
+                                        <span class="badge danger">🗑️ DELETE</span>
+                                    <% } else { %>
+                                        <span class="badge"><%= log.action %></span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <strong><%= log.productName || 'Unknown' %></strong>
+                                    <br>
+                                    <small style="color: var(--muted); font-size: 0.75rem;"><%= log.productId %></small>
+                                </td>
+                                <td><%= log.userId %></td>
+                                <td>
+                                    <small style="color: var(--muted); font-size: 0.75rem;"><%= log.logId %></small>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <% if (totalPages > 1) { %>
+            <div class="pagination" style="margin-top: 15px; display: flex; gap: 5px;">
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <a href="/logs?page=<%= i %>" class="btn <%= currentPage == i ? 'primary' : '' %>">
+                        <%= i %>
+                    </a>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+</body>
+
+</html>
