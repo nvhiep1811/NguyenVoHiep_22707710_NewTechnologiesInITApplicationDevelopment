@@ -26,7 +26,10 @@
             </div>
             <div class="col-md-8">
               <h3><%= product.name %></h3>
-              <p><strong>Giá:</strong> $<%= product.price %></p>
+              <p>
+                <strong>Giá:</strong> <%= product.price.toLocaleString('vi-VN')
+                %> đ
+              </p>
               <p>
                 <strong>Số lượng tồn kho:</strong> <%= product.unitInStock %>
               </p>
