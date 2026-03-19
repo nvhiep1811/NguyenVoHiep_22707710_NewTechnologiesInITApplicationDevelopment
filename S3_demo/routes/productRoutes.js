@@ -1,33 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("../controllers/productControllers");
+const controller = require("../controllers/productControllers");
 const upload = require("../middleware/upload");
 
 // GET all products (homepage)
-router.get("/", productController.getAllProducts);
-router.get("/products", productController.getAllProducts);
-
-// GET form to create new product
-router.get("/products/new", productController.createProductForm);
+router.get("/", controller.getAllProducts);
+router.get("/products", controller.getAllProducts);
 
 // POST create new product
-router.post(
-  "/products",
-  upload.single("image"),
-  productController.createProduct,
-);
+router.post("/products", upload.single("image"), controller.createProduct);
 
 // GET form to edit product
-router.get("/products/edit/:id", productController.editProductForm);
+router.get("/products/edit/:id", controller.editProductForm);
 
 // POST update product
 router.post(
   "/products/update/:id",
   upload.single("image"),
-  productController.updateProduct,
+  controller.updateProduct,
 );
 
 // POST delete product
-router.post("/products/delete/:id", productController.deleteProduct);
+router.post("/products/delete/:id", controller.deleteProduct);
 
 module.exports = router;

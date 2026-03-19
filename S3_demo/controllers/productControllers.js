@@ -1,9 +1,18 @@
 const { s3 } = require("../utils/aws");
 const Product = require("../models/productModel");
-require("dotenv").config();
+
+const renderProductsPage = async (res, editProduct = null) => {
+  const products = await Product.getAll();
+  return res.render("product", { products, editProduct });
+};
+
+const handleError = (res, action, error) => {
+  return res.status(500).send(`Error ${action}: ${error.message}`);
+};
 
 // Delete image from S3
 const deleteImage = async (imageUrl) => {
+  if (!imageUrl) return;
   const key = imageUrl.split(".amazonaws.com/")[1];
 
   const params = {
@@ -17,20 +26,9 @@ const deleteImage = async (imageUrl) => {
 // Render all products
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.getAll();
-    res.render("product", { products, editProduct: null });
+    await renderProductsPage(res);
   } catch (error) {
-    res.status(500).send("Error fetching products: " + error.message);
-  }
-};
-
-// Render form to create new product
-exports.createProductForm = async (req, res) => {
-  try {
-    const products = await Product.getAll();
-    res.render("product", { products, editProduct: null });
-  } catch (error) {
-    res.status(500).send("Error loading create form: " + error.message);
+    handleError(res, "fetching products", error);
   }
 };
 
@@ -48,7 +46,7 @@ exports.createProduct = async (req, res) => {
     await Product.create(product);
     res.redirect("/products");
   } catch (error) {
-    res.status(500).send("Error creating product: " + error.message);
+    handleError(res, "creating product", error);
   }
 };
 
@@ -56,10 +54,9 @@ exports.createProduct = async (req, res) => {
 exports.editProductForm = async (req, res) => {
   try {
     const product = await Product.getById(req.params.id);
-    const products = await Product.getAll();
-    res.render("product", { products, editProduct: product });
+    await renderProductsPage(res, product);
   } catch (error) {
-    res.status(500).send("Error loading edit form: " + error.message);
+    handleError(res, "loading edit form", error);
   }
 };
 
@@ -86,7 +83,7 @@ exports.updateProduct = async (req, res) => {
     await Product.update(req.params.id, updatedData);
     res.redirect("/products");
   } catch (error) {
-    res.status(500).send("Error updating product: " + error.message);
+    handleError(res, "updating product", error);
   }
 };
 
@@ -107,6 +104,6 @@ exports.deleteProduct = async (req, res) => {
     await Product.delete(req.params.id);
     res.redirect("/products");
   } catch (error) {
-    res.status(500).send("Error deleting product: " + error.message);
+    handleError(res, "deleting product", error);
   }
 };

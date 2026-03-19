@@ -2,49 +2,34 @@ const { db } = require("../utils/aws");
 const crypto = require("crypto");
 
 const tableName = "Products";
+const withTable = (params = {}) => ({ TableName: tableName, ...params });
 
 const Product = {
   async getAll() {
-    const params = {
-      TableName: tableName,
-    };
-    return db
-      .scan(params)
-      .promise()
-      .then((data) => data.Items);
+    const { Items } = await db.scan(withTable()).promise();
+    return Items;
   },
 
   async getById(id) {
-    const params = {
-      TableName: tableName,
-      Key: { id },
-    };
-    return db
-      .get(params)
-      .promise()
-      .then((data) => data.Item);
+    const { Item } = await db.get(withTable({ Key: { id } })).promise();
+    return Item;
   },
 
   async create(productData) {
-    const params = {
-      TableName: tableName,
-      Item: {
-        id: crypto.randomUUID(),
-        name: productData.name,
-        price: productData.price,
-        image: productData.image,
-        createdAt: new Date().toISOString(),
-      },
+    const item = {
+      id: crypto.randomUUID(),
+      name: productData.name,
+      price: productData.price,
+      image: productData.image,
+      createdAt: new Date().toISOString(),
     };
-    return db
-      .put(params)
-      .promise()
-      .then(() => params.Item);
+
+    await db.put(withTable({ Item: item })).promise();
+    return item;
   },
 
   async update(id, productData) {
-    const params = {
-      TableName: tableName,
+    const params = withTable({
       Key: { id },
       UpdateExpression:
         "set #name = :name, price = :price, image = :image, updatedAt = :updatedAt",
@@ -58,19 +43,14 @@ const Product = {
         ":updatedAt": new Date().toISOString(),
       },
       ReturnValues: "ALL_NEW",
-    };
-    return db
-      .update(params)
-      .promise()
-      .then((data) => data.Attributes);
+    });
+
+    const { Attributes } = await db.update(params).promise();
+    return Attributes;
   },
 
   async delete(id) {
-    const params = {
-      TableName: tableName,
-      Key: { id },
-    };
-    return db.delete(params).promise();
+    return db.delete(withTable({ Key: { id } })).promise();
   },
 };
 
